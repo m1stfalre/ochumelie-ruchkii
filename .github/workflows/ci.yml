@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [dev, qa, master, main]
+    branches: [dev, qa, main]
   pull_request:
-    branches: [dev, qa, master, main]
+    branches: [dev, qa, main]
 
 jobs:
   test-and-analyze:
@@ -19,7 +19,7 @@ jobs:
         with:
           php-version: "8.2"
           extensions: bcmath, ctype, fileinfo, json, mbstring, pdo, tokenizer, xml, sqlite
-          coverage: xdebug
+          coverage: none
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
@@ -30,32 +30,21 @@ jobs:
           php artisan key:generate --force
 
       - name: Run migrations
-        run: |
-          php artisan migrate --force
+        run: php artisan migrate --force
 
-      - name: Run tests with coverage
+      - name: Run tests
         run: vendor/bin/phpunit
 
       - name: Static Analysis (Larastan)
-        run: vendor/bin/phpstan analyse --error-format=github --level=5
+        run: vendor/bin/phpstan analyse --level=5 --error-format=github
 
       - name: Linting (Laravel Pint)
         run: vendor/bin/pint --test --preset=psr12
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage.xml
-
   simulate-deploy:
     runs-on: ubuntu-latest
     needs: test-and-analyze
-    if: success() && github.event_name == 'push' && (github.ref_name == 'dev' || github.ref_name == 'qa' || github.ref_name == 'master' || github.ref_name == 'main')
-    environment:
-      name: ${{ github.ref_name == 'master' && 'production' || github.ref_name == 'main' && 'production' || github.ref_name == 'qa' && 'staging' || 'development' }}
-      url: ${{ github.ref_name == 'master' && 'https://ochumelye.ru' || github.ref_name == 'main' && 'https://ochumelye.ru' || github.ref_name == 'qa' && 'https://staging.ochumelye.ru' || 'https://dev.ochumelye.ru' }}
-
+    if: success() && github.event_name == 'push'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -69,7 +58,7 @@ jobs:
           elif [[ "${{ github.ref_name }}" == "qa" ]]; then
             echo "ENV=uat" >> $GITHUB_OUTPUT
             echo "ENV_NAME=UAT" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref_name }}" == "master" ]] || [[ "${{ github.ref_name }}" == "main" ]]; then
+          elif [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "ENV=prod" >> $GITHUB_OUTPUT
             echo "ENV_NAME=Production" >> $GITHUB_OUTPUT
           fi
@@ -78,29 +67,14 @@ jobs:
         run: |
           if [ -f ".env.${{ steps.env.outputs.ENV }}" ]; then
             cp .env.${{ steps.env.outputs.ENV }} .env
-            echo "Deploying to ${{ steps.env.outputs.ENV_NAME }} with .env.${{ steps.env.outputs.ENV }}"
+            echo "Deploying to ${{ steps.env.outputs.ENV_NAME }}"
           else
             cp .env.example .env
-            echo "⚠️ Using .env.example for ${{ steps.env.outputs.ENV_NAME }}"
+            echo "Deploying to ${{ steps.env.outputs.ENV_NAME }} with default config"
           fi
 
       - name: Simulate deployment
         run: |
           php artisan config:cache
           php artisan route:cache
-          php artisan view:cache
           echo "✅ Deployment simulation completed for ${{ steps.env.outputs.ENV_NAME }}"
-
-  notify:
-    runs-on: ubuntu-latest
-    needs: [test-and-analyze, simulate-deploy]
-    if: always()
-    steps:
-      - name: Check status
-        run: |
-          if [ "${{ needs.test-and-analyze.result }}" == "success" ] && [ "${{ needs.simulate-deploy.result }}" == "success" ]; then
-            echo "✅ Pipeline completed successfully for branch: ${{ github.ref_name }}"
-          else
-            echo "❌ Pipeline failed for branch: ${{ github.ref_name }}"
-            exit 1
-          fi
