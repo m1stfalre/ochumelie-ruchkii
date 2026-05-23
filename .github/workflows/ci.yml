@@ -32,7 +32,6 @@ jobs:
       - name: Run migrations and seeders
         run: |
           php artisan migrate --force
-          php artisan db:seed --force
 
       - name: Run tests with coverage
         run: vendor/bin/phpunit --coverage-clover coverage.xml
