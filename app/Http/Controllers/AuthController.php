@@ -55,21 +55,21 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'full_name' => [
-                'required', 
-                'string', 
-                'max:255', 
+                'required',
+                'string',
+                'max:255',
                 'regex:/^[а-яА-ЯёЁa-zA-Z\s\-]+$/u'
             ],
             'email' => [
-                'required', 
-                'string', 
-                'email', 
-                'max:255', 
+                'required',
+                'string',
+                'email',
+                'max:255',
                 'unique:users,email'
             ],
             'password' => [
-                'required', 
-                'confirmed', 
+                'required',
+                'confirmed',
                 Password::min(8)
                     ->letters()
                     ->mixedCase()
@@ -86,13 +86,13 @@ class AuthController extends Controller
             'full_name.required' => 'Поле ФИО обязательно для заполнения.',
             'full_name.regex' => 'ФИО может содержать только буквы, пробелы и дефисы.',
             'full_name.max' => 'ФИО не может быть длиннее 255 символов.',
-            
+
             'email.required' => 'Поле Email обязательно для заполнения.',
             'email.email' => 'Введите корректный email адрес (например: user@example.com).',
             'email.regex' => 'Email должен быть в формате example@domain.ru',
             'email.unique' => 'Пользователь с таким email уже зарегистрирован.',
             'email.max' => 'Email не может быть длиннее 255 символов.',
-            
+
             'password.required' => 'Поле Пароль обязательно для заполнения.',
             'password.confirmed' => 'Подтверждение пароля не совпадает с паролем.',
             'password.min' => 'Пароль должен содержать минимум 8 символов.',
@@ -100,7 +100,7 @@ class AuthController extends Controller
             'password.mixed' => 'Пароль должен содержать как строчные, так и прописные буквы.',
             'password.numbers' => 'Пароль должен содержать хотя бы одну цифру.',
             'password.symbols' => 'Пароль должен содержать хотя бы один специальный символ (@, #, $, %, !, и т.д.).',
-            
+
             'phone.required' => 'Поле Номер телефона обязательно для заполнения.',
             'phone.regex' => 'Номер телефона должен быть в формате +79********* или 89*********.',
             'phone.unique' => 'Пользователь с таким номером телефона уже зарегистрирован.',
@@ -121,7 +121,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $userName = Auth::user()->full_name ?? 'Пользователь';
-        
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -14,7 +14,7 @@ class RoleMiddlewareTest extends TestCase
     public function it_redirects_unauthenticated_user_to_login()
     {
         $response = $this->get('/cabinet');
-        
+
         $response->assertRedirect('/login');
     }
 
@@ -23,9 +23,9 @@ class RoleMiddlewareTest extends TestCase
     {
         $instructor = User::factory()->create(['role' => 'instructor']);
         $this->actingAs($instructor);
-        
+
         $response = $this->get('/cabinet');
-        
+
         $response->assertStatus(200);
     }
 
@@ -34,9 +34,9 @@ class RoleMiddlewareTest extends TestCase
     {
         $visitor = User::factory()->create(['role' => 'visitor']);
         $this->actingAs($visitor);
-        
+
         $response = $this->get('/cabinet');
-        
+
         $response->assertStatus(403);
     }
 }

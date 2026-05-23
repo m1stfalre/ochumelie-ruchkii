@@ -18,7 +18,7 @@ class BookingTest extends TestCase
     {
         $user = User::factory()->create();
         $booking = Booking::factory()->create(['user_id' => $user->id]);
-        
+
         $this->assertInstanceOf(User::class, $booking->user);
         $this->assertEquals($user->id, $booking->user->id);
     }
@@ -38,12 +38,12 @@ class BookingTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $booking = Booking::create([
             'user_id' => User::factory()->create()->id,
             'master_class_id' => $masterClass->id,
         ]);
-        
+
         $this->assertInstanceOf(MasterClass::class, $booking->masterClass);
         $this->assertEquals($masterClass->id, $booking->masterClass->id);
     }
@@ -54,7 +54,7 @@ class BookingTest extends TestCase
         $user = User::factory()->create();
         $instructor = User::factory()->create(['role' => 'instructor']);
         $type = CreativityType::create(['name' => 'Test', 'description' => 'Desc']);
-        
+
         $masterClass = MasterClass::create([
             'instructor_id' => $instructor->id,
             'type_id' => $type->id,
@@ -65,12 +65,12 @@ class BookingTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         Booking::create([
             'user_id' => $user->id,
             'master_class_id' => $masterClass->id,
         ]);
-        
+
         $this->assertTrue(Booking::isAlreadyBooked($user->id, $masterClass->id));
     }
 
@@ -80,7 +80,7 @@ class BookingTest extends TestCase
         $user = User::factory()->create();
         $instructor = User::factory()->create(['role' => 'instructor']);
         $type = CreativityType::create(['name' => 'Test', 'description' => 'Desc']);
-        
+
         $masterClass = MasterClass::create([
             'instructor_id' => $instructor->id,
             'type_id' => $type->id,
@@ -91,7 +91,7 @@ class BookingTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $this->assertFalse(Booking::isAlreadyBooked($user->id, $masterClass->id));
     }
 }

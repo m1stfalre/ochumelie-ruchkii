@@ -24,16 +24,16 @@ class InstructorController extends Controller
     public function create()
     {
         $types = CreativityType::all();
-        
+
         // Получаем занятые слоты для текущего ведущего
         $busySlots = MasterClass::where('instructor_id', Auth::id())
             ->where('date', '>=', Carbon::now()->startOfDay())
             ->get(['date', 'start_time'])
-            ->map(function($item) {
+            ->map(function ($item) {
                 return $item->date->format('Y-m-d') . '|' . $item->start_time;
             })
             ->toArray();
-        
+
         $availableDates = [];
         for ($i = 0; $i <= 30; $i++) {
             $date = Carbon::now()->addDays($i);
@@ -41,15 +41,15 @@ class InstructorController extends Controller
                 $availableDates[] = $date->format('Y-m-d');
             }
         }
-        
+
         $timeSlots = ['09:00', '11:00', '13:00', '15:00'];
-        
+
         return view('create', compact('types', 'busySlots', 'availableDates', 'timeSlots'));
     }
 
     public function store(Request $request)
     {
-        // Валидация полей 
+        // Валидация полей
         $validated = $request->validate([
             'type_id' => ['required', 'exists:creativity_types,id'],
             'title' => ['required', 'string', 'max:255'],
@@ -62,28 +62,28 @@ class InstructorController extends Controller
             // Сообщения для type_id
             'type_id.required' => 'Пожалуйста, выберите вид творчества.',
             'type_id.exists' => 'Выбранный вид творчества не существует.',
-            
+
             // Сообщения для title
             'title.required' => 'Введите название мастер-класса.',
             'title.max' => 'Название мастер-класса не может быть длиннее 255 символов.',
-            
+
             // Сообщения для description
             'description.required' => 'Введите описание мастер-класса.',
             'description.min' => 'Описание должно содержать минимум 10 символов.',
-            
+
             // Сообщения для date
             'date.required' => 'Выберите дату проведения мастер-класса.',
             'date.after_or_equal' => 'Дата не может быть раньше сегодняшнего дня.',
-            
+
             // Сообщения для start_time
             'start_time.required' => 'Выберите время проведения мастер-класса.',
             'start_time.in' => 'Время должно быть 9:00, 11:00, 13:00 или 15:00.',
-            
+
             // Сообщения для max_participants
             'max_participants.required' => 'Укажите максимальное количество участников.',
             'max_participants.min' => 'Минимальное количество участников - 1 человек.',
             'max_participants.max' => 'Максимальное количество участников - 30 человек.',
-            
+
             // Сообщения для price
             'price.required' => 'Укажите стоимость мастер-класса.',
             'price.min' => 'Стоимость не может быть отрицательной.',
@@ -117,7 +117,7 @@ class InstructorController extends Controller
         $classesCountOnDate = MasterClass::where('instructor_id', Auth::id())
             ->where('date', $validated['date'])
             ->count();
-        
+
         if ($classesCountOnDate >= 3) {
             return back()
                 ->withErrors([
@@ -128,7 +128,7 @@ class InstructorController extends Controller
 
         $timeConflict = MasterClass::where('instructor_id', Auth::id())
             ->where('date', $validated['date'])
-            ->where(function($query) use ($validated) {
+            ->where(function ($query) use ($validated) {
 
                 $query->where('start_time', $validated['start_time']);
             })
@@ -178,18 +178,18 @@ class InstructorController extends Controller
         return redirect()->route('cabinet.index')
             ->with('message', 'Мастер-класс "' . $masterClass->title . '" успешно обновлен!');
     }
-    
+
     public function destroy($id)
     {
         $masterClass = MasterClass::where('instructor_id', Auth::id())->findOrFail($id);
-        
+
         if ($masterClass->bookings()->count() > 0) {
             return back()->with('error', 'Нельзя удалить мастер-класс, на который уже есть записи.');
         }
-        
+
         $title = $masterClass->title;
         $masterClass->delete();
-        
+
         return redirect()->route('cabinet.index')
             ->with('message', 'Мастер-класс "' . $title . '" успешно удален!');
     }

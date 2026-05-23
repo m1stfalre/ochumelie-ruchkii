@@ -17,15 +17,15 @@ class HomeControllerTest extends TestCase
     public function it_displays_home_page_for_guest()
     {
         $type = CreativityType::create(['name' => 'Art', 'description' => 'Desc']);
-        
+
         $response = $this->get('/');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('home');
         $response->assertViewHas('types');
         $response->assertViewHas('allClasses');
         $response->assertViewHas('myBookings');
-        
+
         $this->assertTrue($response->viewData('myBookings')->isEmpty());
     }
 
@@ -35,7 +35,7 @@ class HomeControllerTest extends TestCase
         $user = User::factory()->create();
         $instructor = User::factory()->create(['role' => 'instructor']);
         $type = CreativityType::create(['name' => 'Art', 'description' => 'Desc']);
-        
+
         $masterClass = MasterClass::create([
             'instructor_id' => $instructor->id,
             'type_id' => $type->id,
@@ -46,16 +46,16 @@ class HomeControllerTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         Booking::create([
             'user_id' => $user->id,
             'master_class_id' => $masterClass->id,
         ]);
-        
+
         $this->actingAs($user);
-        
+
         $response = $this->get('/');
-        
+
         $myBookings = $response->viewData('myBookings');
         $this->assertCount(1, $myBookings);
         $this->assertEquals($masterClass->id, $myBookings->first()->masterClass->id);
@@ -66,7 +66,7 @@ class HomeControllerTest extends TestCase
     {
         $instructor = User::factory()->create(['role' => 'instructor']);
         $type = CreativityType::create(['name' => 'Art', 'description' => 'Desc']);
-        
+
         $futureClass = MasterClass::create([
             'instructor_id' => $instructor->id,
             'type_id' => $type->id,
@@ -77,7 +77,7 @@ class HomeControllerTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $pastClass = MasterClass::create([
             'instructor_id' => $instructor->id,
             'type_id' => $type->id,
@@ -88,7 +88,7 @@ class HomeControllerTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $todayClass = MasterClass::create([
             'instructor_id' => $instructor->id,
             'type_id' => $type->id,
@@ -99,9 +99,9 @@ class HomeControllerTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $response = $this->get('/');
-        
+
         $allClasses = $response->viewData('allClasses');
         $this->assertTrue($allClasses->contains($futureClass));
         $this->assertTrue($allClasses->contains($todayClass));

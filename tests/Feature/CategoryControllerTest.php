@@ -18,12 +18,12 @@ class CategoryControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->type = CreativityType::create([
             'name' => 'Architecture',
             'description' => 'Test description for architecture category'
         ]);
-        
+
         $this->instructor = User::factory()->create(['role' => 'instructor']);
     }
 
@@ -57,7 +57,7 @@ class CategoryControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('category');
         $response->assertViewHas('type', $this->type);
-        
+
         $classes = $response->viewData('classes');
         $this->assertTrue($classes->contains($futureClass));
         $this->assertFalse($classes->contains($pastClass));
@@ -67,7 +67,7 @@ class CategoryControllerTest extends TestCase
     public function it_returns_404_for_nonexistent_category()
     {
         $response = $this->get(route('category.show', 99999));
-        
+
         $response->assertStatus(404);
     }
 
@@ -108,9 +108,9 @@ class CategoryControllerTest extends TestCase
         ]);
 
         $response = $this->get(route('category.show', $this->type->id));
-        
+
         $classes = $response->viewData('classes')->pluck('title')->toArray();
-        
+
         $this->assertEquals(['Class 2', 'Class 3', 'Class 1'], $classes);
     }
 }

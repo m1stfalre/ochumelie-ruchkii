@@ -36,21 +36,21 @@ Route::get('/category/{id}', [CategoryController::class, 'show'])->name('categor
 
 Route::middleware('auth')->prefix('booking')->name('booking.')->group(function () {
     Route::get('/{id}/confirm', [BookingController::class, 'confirmPage'])->name('confirm');
-    
+
     Route::post('/{id}/process', [BookingController::class, 'process'])->name('process');
 });
 
 
 Route::middleware(['auth', 'role:instructor'])->prefix('cabinet')->name('cabinet.')->group(function () {
-    
+
     Route::get('/', [InstructorController::class, 'index'])->name('index');
 
     Route::get('/create', [InstructorController::class, 'create'])->name('create');
-    
+
     Route::post('/store', [InstructorController::class, 'store'])->name('store');
-    
+
     Route::get('/{id}/edit', [InstructorController::class, 'edit'])->name('edit');
-    
+
     Route::put('/{id}/update', [InstructorController::class, 'update'])->name('update');
 });
 

@@ -21,7 +21,7 @@ class InstructorControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->instructor = User::create([
             'full_name' => 'Instructor',
             'email' => 'instructor@example.com',
@@ -29,9 +29,9 @@ class InstructorControllerTest extends TestCase
             'phone' => '+79123456788',
             'role' => 'instructor',
         ]);
-        
+
         $this->type = CreativityType::create([
-            'name' => 'Art', 
+            'name' => 'Art',
             'description' => 'Description'
         ]);
     }
@@ -40,9 +40,9 @@ class InstructorControllerTest extends TestCase
     public function instructor_can_view_their_cabinet()
     {
         $this->actingAs($this->instructor);
-        
+
         $response = $this->get(route('cabinet.index'));
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('cabinet');
     }
@@ -57,11 +57,11 @@ class InstructorControllerTest extends TestCase
             'phone' => '+79123456789',
             'role' => 'visitor',
         ]);
-        
+
         $this->actingAs($visitor);
-        
+
         $response = $this->get(route('cabinet.index'));
-        
+
         $response->assertStatus(403);
     }
 
@@ -69,9 +69,9 @@ class InstructorControllerTest extends TestCase
     public function instructor_can_view_create_form()
     {
         $this->actingAs($this->instructor);
-        
+
         $response = $this->get(route('cabinet.create'));
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('create');
     }
@@ -80,7 +80,7 @@ class InstructorControllerTest extends TestCase
     public function instructor_can_create_master_class()
     {
         $this->actingAs($this->instructor);
-        
+
         $response = $this->post(route('cabinet.store'), [
             'type_id' => $this->type->id,
             'title' => 'New Master Class',
@@ -90,10 +90,10 @@ class InstructorControllerTest extends TestCase
             'max_participants' => 15,
             'price' => 2000,
         ]);
-        
+
         $response->assertRedirect(route('cabinet.index'));
         $response->assertSessionHas('message', 'Мастер-класс "New Master Class" успешно добавлен!');
-        
+
         $this->assertDatabaseHas('master_classes', [
             'title' => 'New Master Class',
             'instructor_id' => $this->instructor->id,
@@ -104,9 +104,9 @@ class InstructorControllerTest extends TestCase
     public function it_validates_required_fields_when_creating_class()
     {
         $this->actingAs($this->instructor);
-        
+
         $response = $this->post(route('cabinet.store'), []);
-        
+
         $response->assertSessionHasErrors([
             'type_id', 'title', 'description', 'date', 'start_time', 'max_participants', 'price'
         ]);
@@ -116,7 +116,7 @@ class InstructorControllerTest extends TestCase
     public function it_prevents_creating_class_on_past_date()
     {
         $this->actingAs($this->instructor);
-        
+
         $response = $this->post(route('cabinet.store'), [
             'type_id' => $this->type->id,
             'title' => 'Past Class',
@@ -126,7 +126,7 @@ class InstructorControllerTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $response->assertSessionHasErrors(['date']);
     }
 
@@ -134,7 +134,7 @@ class InstructorControllerTest extends TestCase
     public function instructor_can_edit_their_class()
     {
         $this->actingAs($this->instructor);
-        
+
         $masterClass = MasterClass::create([
             'instructor_id' => $this->instructor->id,
             'type_id' => $this->type->id,
@@ -145,15 +145,15 @@ class InstructorControllerTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $response = $this->put(route('cabinet.update', $masterClass->id), [
             'description' => 'Updated description that is long enough',
             'price' => 1500,
         ]);
-        
+
         $response->assertRedirect(route('cabinet.index'));
         $response->assertSessionHas('message', 'Мастер-класс "Original Title" успешно обновлен!');
-        
+
         $this->assertDatabaseHas('master_classes', [
             'id' => $masterClass->id,
             'description' => 'Updated description that is long enough',
@@ -171,9 +171,9 @@ class InstructorControllerTest extends TestCase
             'phone' => '+79123456780',
             'role' => 'instructor',
         ]);
-        
+
         $this->actingAs($this->instructor);
-        
+
         $masterClass = MasterClass::create([
             'instructor_id' => $otherInstructor->id,
             'type_id' => $this->type->id,
@@ -184,9 +184,9 @@ class InstructorControllerTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $response = $this->get(route('cabinet.edit', $masterClass->id));
-        
+
         $response->assertStatus(404);
     }
 
@@ -194,7 +194,7 @@ class InstructorControllerTest extends TestCase
     public function instructor_can_delete_class_without_bookings()
     {
         $this->actingAs($this->instructor);
-        
+
         $masterClass = MasterClass::create([
             'instructor_id' => $this->instructor->id,
             'type_id' => $this->type->id,
@@ -205,12 +205,12 @@ class InstructorControllerTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $response = $this->delete(route('cabinet.destroy', $masterClass->id));
-        
+
         $response->assertRedirect(route('cabinet.index'));
         $response->assertSessionHas('message', 'Мастер-класс "Delete Me" успешно удален!');
-        
+
         $this->assertDatabaseMissing('master_classes', ['id' => $masterClass->id]);
     }
 
@@ -218,7 +218,7 @@ class InstructorControllerTest extends TestCase
     public function instructor_cannot_delete_class_with_bookings()
     {
         $this->actingAs($this->instructor);
-        
+
         $masterClass = MasterClass::create([
             'instructor_id' => $this->instructor->id,
             'type_id' => $this->type->id,
@@ -229,7 +229,7 @@ class InstructorControllerTest extends TestCase
             'max_participants' => 10,
             'price' => 1000,
         ]);
-        
+
         $user = User::create([
             'full_name' => 'Test User',
             'email' => 'test@example.com',
@@ -237,17 +237,17 @@ class InstructorControllerTest extends TestCase
             'phone' => '+79123456789',
             'role' => 'visitor',
         ]);
-        
+
         Booking::create([
             'user_id' => $user->id,
             'master_class_id' => $masterClass->id,
         ]);
-        
+
         $response = $this->delete(route('cabinet.destroy', $masterClass->id));
-        
+
         $response->assertSessionHas('error', 'Нельзя удалить мастер-класс, на который уже есть записи.');
         $response->assertRedirect();
-        
+
         $this->assertDatabaseHas('master_classes', ['id' => $masterClass->id]);
     }
 }

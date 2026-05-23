@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -22,7 +21,7 @@ return new class extends Migration
             $table->integer('max_participants');
             $table->decimal('price', 10, 2);
             $table->timestamps();
-    
+
             $table->unique(['instructor_id', 'date', 'start_time']);
         });
     }

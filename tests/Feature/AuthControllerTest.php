@@ -15,7 +15,7 @@ class AuthControllerTest extends TestCase
     public function it_displays_login_page()
     {
         $response = $this->get('/login');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('login');
     }
@@ -24,7 +24,7 @@ class AuthControllerTest extends TestCase
     public function it_displays_register_page()
     {
         $response = $this->get('/register');
-        
+
         $response->assertStatus(200);
         $response->assertViewIs('register');
     }
@@ -105,10 +105,10 @@ class AuthControllerTest extends TestCase
 
         // Проверяем что редирект на login
         $response->assertRedirect('/login');
-        
+
         // Проверяем сообщение об успехе
         $response->assertSessionHas('success', 'Регистрация успешна!.');
-        
+
         // Проверяем что пользователь создан
         $this->assertDatabaseHas('users', [
             'email' => 'ivan@example.com',
@@ -163,11 +163,11 @@ class AuthControllerTest extends TestCase
             'phone' => '+79123456789',
             'role' => 'visitor',
         ]);
-        
+
         $this->actingAs($user);
-        
+
         $response = $this->post('/logout');
-        
+
         $response->assertRedirect('/');
         $this->assertGuest();
     }

@@ -24,7 +24,7 @@ class MasterClass extends Model
         'title',
         'description',
         'date',
-        'start_time', 
+        'start_time',
         'max_participants',
         'price',
     ];

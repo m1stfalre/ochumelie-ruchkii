@@ -23,7 +23,7 @@ class BookingControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::create([
             'full_name' => 'Test User',
             'email' => 'user@example.com',
@@ -31,7 +31,7 @@ class BookingControllerTest extends TestCase
             'phone' => '+79123456789',
             'role' => 'visitor',
         ]);
-        
+
         $this->instructor = User::create([
             'full_name' => 'Instructor',
             'email' => 'instructor@example.com',
@@ -39,12 +39,12 @@ class BookingControllerTest extends TestCase
             'phone' => '+79123456788',
             'role' => 'instructor',
         ]);
-        
+
         $this->type = CreativityType::create([
-            'name' => 'Art', 
+            'name' => 'Art',
             'description' => 'Description'
         ]);
-        
+
         $this->masterClass = MasterClass::create([
             'instructor_id' => $this->instructor->id,
             'type_id' => $this->type->id,
@@ -74,11 +74,11 @@ class BookingControllerTest extends TestCase
     public function it_redirects_when_no_free_seats()
     {
         $this->actingAs($this->user);
-        
+
         $this->masterClass->update(['max_participants' => 0]);
-        
+
         $response = $this->get(route('booking.confirm', $this->masterClass->id));
-        
+
         $response->assertSessionHas('error', 'К сожалению, свободных мест больше нет.');
         $response->assertRedirect();
     }
@@ -87,14 +87,14 @@ class BookingControllerTest extends TestCase
     public function it_redirects_when_user_already_booked()
     {
         $this->actingAs($this->user);
-        
+
         Booking::create([
             'user_id' => $this->user->id,
             'master_class_id' => $this->masterClass->id,
         ]);
-        
+
         $response = $this->get(route('booking.confirm', $this->masterClass->id));
-        
+
         $response->assertSessionHas('error', 'Вы уже записаны на этот мастер-класс.');
         $response->assertRedirect();
     }
@@ -110,7 +110,7 @@ class BookingControllerTest extends TestCase
 
         $response->assertRedirect(route('category.show', $this->masterClass->type_id));
         $response->assertSessionHas('message', 'Вы успешно записаны на мастер-класс!');
-        
+
         $this->assertDatabaseHas('bookings', [
             'user_id' => $this->user->id,
             'master_class_id' => $this->masterClass->id,
@@ -128,7 +128,7 @@ class BookingControllerTest extends TestCase
 
         $response->assertRedirect(route('category.show', $this->masterClass->type_id));
         $response->assertSessionHas('message', 'Запись была отменена.');
-        
+
         $this->assertDatabaseMissing('bookings', [
             'user_id' => $this->user->id,
             'master_class_id' => $this->masterClass->id,
@@ -139,9 +139,9 @@ class BookingControllerTest extends TestCase
     public function it_prevents_booking_when_no_seats_left_during_process()
     {
         $this->actingAs($this->user);
-        
+
         $this->masterClass->update(['max_participants' => 0]);
-        
+
         $response = $this->post(route('booking.process', $this->masterClass->id), [
             'action' => 'confirm'
         ]);
@@ -154,12 +154,12 @@ class BookingControllerTest extends TestCase
     public function it_prevents_double_booking_during_process()
     {
         $this->actingAs($this->user);
-        
+
         Booking::create([
             'user_id' => $this->user->id,
             'master_class_id' => $this->masterClass->id,
         ]);
-        
+
         $response = $this->post(route('booking.process', $this->masterClass->id), [
             'action' => 'confirm'
         ]);
@@ -172,7 +172,7 @@ class BookingControllerTest extends TestCase
     public function it_requires_authentication_for_booking()
     {
         $response = $this->get(route('booking.confirm', $this->masterClass->id));
-        
+
         $response->assertRedirect('/login');
     }
 }
