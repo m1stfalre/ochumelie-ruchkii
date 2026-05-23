@@ -34,7 +34,7 @@ jobs:
           php artisan migrate --force
 
       - name: Run tests with coverage
-        run: vendor/bin/phpunit --coverage-clover coverage.xml
+        run: vendor/bin/phpunit --verbose --no-coverage
 
       - name: Static Analysis (Larastan)
         run: vendor/bin/phpstan analyse --error-format=github --level=5
