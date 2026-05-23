@@ -29,4 +29,5 @@ jobs:
           php artisan key:generate --force
 
       - name: Run tests
-        run: php artisan migrate:fresh --force && vendor/bin/phpunit
+        run: php artisan migrate:refresh --force
+          vendor/bin/phpunit --no-coverage
