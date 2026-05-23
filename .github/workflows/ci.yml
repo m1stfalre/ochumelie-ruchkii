@@ -26,7 +26,7 @@ jobs:
 
       - name: Copy CI environment file
         run: |
-          cp .env.ci .env 2>/dev/null || echo "APP_KEY=" >> .env
+          cp .env.ci .env
           php artisan key:generate --force
 
       - name: Run migrations and seeders
@@ -38,12 +38,10 @@ jobs:
         run: vendor/bin/phpunit --coverage-clover coverage.xml
 
       - name: Static Analysis (Larastan)
-        run: |
-          vendor/bin/phpstan analyse --error-format=github --level=5
+        run: vendor/bin/phpstan analyse --error-format=github --level=5
 
       - name: Linting (Laravel Pint)
-        run: |
-          vendor/bin/pint --test --preset=psr12
+        run: vendor/bin/pint --test --preset=psr12
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -105,7 +103,5 @@ jobs:
             echo "✅ Pipeline completed successfully for branch: ${{ github.ref_name }}"
           else
             echo "❌ Pipeline failed for branch: ${{ github.ref_name }}"
-            echo "Test result: ${{ needs.test-and-analyze.result }}"
-            echo "Deploy result: ${{ needs.simulate-deploy.result }}"
             exit 1
           fi
