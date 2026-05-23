@@ -41,13 +41,22 @@ jobs:
       - name: Linting (Laravel Pint)
         run: vendor/bin/pint --test --preset=psr12
 
-  simulate-deploy:
+    simulate-deploy:
     runs-on: ubuntu-latest
     needs: test-and-analyze
     if: success() && github.event_name == 'push'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: bcmath, ctype, fileinfo, json, mbstring, pdo, tokenizer, xml, sqlite
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress --no-dev
 
       - name: Determine environment
         id: env
