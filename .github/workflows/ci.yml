@@ -29,8 +29,10 @@ jobs:
           cp .env.ci .env 2>/dev/null || echo "APP_KEY=" >> .env
           php artisan key:generate --force
 
-      - name: Run migrations
-        run: php artisan migrate --force
+      - name: Run migrations and seeders
+        run: |
+          php artisan migrate --force
+          php artisan db:seed --force
 
       - name: Run tests with coverage
         run: vendor/bin/phpunit --coverage-clover coverage.xml
@@ -52,10 +54,10 @@ jobs:
   simulate-deploy:
     runs-on: ubuntu-latest
     needs: test-and-analyze
-    if: success() && (github.ref_name == 'dev' || github.ref_name == 'qa' || github.ref_name == 'master' || github.ref_name == 'main')
+    if: success() && github.event_name == 'push' && (github.ref_name == 'dev' || github.ref_name == 'qa' || github.ref_name == 'master' || github.ref_name == 'main')
     environment:
       name: ${{ github.ref_name == 'master' && 'production' || github.ref_name == 'main' && 'production' || github.ref_name == 'qa' && 'staging' || 'development' }}
-      url: ${{ github.ref_name == 'master' && 'https://ochumelye.ru' || github.ref_name == 'main' && 'https://ochumelye.ru' || 'https://staging.ochumelye.ru' }}
+      url: ${{ github.ref_name == 'master' && 'https://ochumelye.ru' || github.ref_name == 'main' && 'https://ochumelye.ru' || github.ref_name == 'qa' && 'https://staging.ochumelye.ru' || 'https://dev.ochumelye.ru' }}
 
     steps:
       - name: Checkout code
@@ -103,5 +105,7 @@ jobs:
             echo "✅ Pipeline completed successfully for branch: ${{ github.ref_name }}"
           else
             echo "❌ Pipeline failed for branch: ${{ github.ref_name }}"
+            echo "Test result: ${{ needs.test-and-analyze.result }}"
+            echo "Deploy result: ${{ needs.simulate-deploy.result }}"
             exit 1
           fi
