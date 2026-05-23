@@ -1,0 +1,17 @@
+cat > .gitignore << EOF
+/vendor/
+/node_modules/
+.env
+.env.*
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+.idea/
+.vscode/
+.DS_Store
+.phpunit.result.cache
+/storage/*.key
+/public/storage
+coverage.xml
+EOF
